@@ -5,25 +5,55 @@
 </ion-header>
 
 <ion-content>
-  <!-- Muestra el indicador de carga si está cargando -->
-  <ion-spinner *ngIf="isLoading" class="ion-padding"></ion-spinner>
+  <!-- Lista de Ejemplos -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title></ion-card-title>
+    </ion-card-header>
 
-  <!-- Lista los lugares si están disponibles -->
-  <ion-list *ngIf="!isLoading && places.length > 0">
-    <ion-item *ngFor="let place of places">
-      <ion-thumbnail slot="start" *ngIf="place.photo">
-        <img [src]="place.photo" />
-      </ion-thumbnail>
-      <ion-label>
-        <h2>{{ place.name }}</h2>
-        <p>{{ place.comment }}</p>
-        <small>Lat: {{ place.latitude }}, Lng: {{ place.longitude }}</small>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+    <ion-spinner *ngIf="isLoadingExamples" class="ion-padding"></ion-spinner>
 
-  <!-- Mensaje si no hay lugares -->
-  <p *ngIf="!isLoading && places.length === 0" class="ion-padding">
-    No hay lugares disponibles.
-  </p>
+    <ion-list *ngIf="!isLoadingExamples && examplePlaces.length > 0">
+      <ion-item *ngFor="let place of examplePlaces">
+        <ion-thumbnail slot="start" *ngIf="place.photo">
+          <img [src]="place.photo" />
+        </ion-thumbnail>
+        <ion-label>
+          <h2>{{ place.name }}</h2>
+          <p>{{ place.comment }}</p>
+          <small>Lat: {{ place.latitude }}, Lng: {{ place.longitude }}</small>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <p *ngIf="!isLoadingExamples && examplePlaces.length === 0" class="ion-padding">
+      No hay datos de ejemplo disponibles.
+    </p>
+  </ion-card>
+
+  <!-- Lista de Firebase -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title></ion-card-title>
+    </ion-card-header>
+
+    <ion-spinner *ngIf="isLoadingDatabase" class="ion-padding"></ion-spinner>
+
+    <ion-list *ngIf="!isLoadingDatabase && databasePlaces.length > 0">
+      <ion-item *ngFor="let place of databasePlaces">
+        <ion-thumbnail slot="start" *ngIf="place.photo">
+          <img [src]="place.photo" />
+        </ion-thumbnail>
+        <ion-label>
+          <h2>{{ place.name }}</h2>
+          <p>{{ place.comment }}</p>
+          <small>Lat: {{ place.latitude }}, Lng: {{ place.longitude }}</small>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <p *ngIf="!isLoadingDatabase && databasePlaces.length === 0" class="ion-padding">
+      No hay datos disponibles desde Firebase.
+    </p>
+  </ion-card>
 </ion-content>

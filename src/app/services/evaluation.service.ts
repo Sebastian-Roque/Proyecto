@@ -1,20 +1,22 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EvaluationService {
+  private collectionName = 'evaluations'; // Nombre de la colección en Firebase
+
   constructor(private firestore: AngularFirestore) {}
 
-  // Método para agregar una evaluación
-  async addEvaluation(data: any): Promise<void> {
-    const evaluationsRef = this.firestore.collection('evaluations'); // Colección en Firestore
-    await evaluationsRef.add(data); // Agregar documento
+  // Método para obtener evaluaciones desde Firebase
+  getEvaluations(): Observable<any[]> {
+    return this.firestore.collection(this.collectionName).valueChanges({ idField: 'id' });
   }
 
-  // Método para obtener evaluaciones
-  getEvaluations() {
-    return this.firestore.collection('evaluations').valueChanges({ idField: 'id' }); // Cambiado para compatibilidad
+  // Método para agregar una nueva evaluación a Firebase
+  addEvaluation(evaluation: any): Promise<any> {
+    return this.firestore.collection(this.collectionName).add(evaluation);
   }
 }

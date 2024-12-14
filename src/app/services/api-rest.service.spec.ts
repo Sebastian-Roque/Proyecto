@@ -1,13 +1,12 @@
 import { TestBed } from '@angular/core/testing';
+import { ApiEvaluationsService } from './api-rest.service'; // Cambia ApiRestService por ApiEvaluationsService
 
-import { ApiRestService } from './api-rest.service';
-
-describe('ApiRestService', () => {
-  let service: ApiRestService;
+describe('ApiEvaluationsService', () => {
+  let service: ApiEvaluationsService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(ApiRestService);
+    service = TestBed.inject(ApiEvaluationsService);
   });
 
   it('should be created', () => {

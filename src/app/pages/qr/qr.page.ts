@@ -13,22 +13,37 @@ export class QrPage {
   constructor() {}
 
   async startScan() {
-    // Solicitar permiso para usar la cámara
-    const status = await BarcodeScanner.checkPermission({ force: true });
+    try {
+      // Verificar si estamos en un entorno web o móvil
+      const isWeb = typeof window !== 'undefined' && !BarcodeScanner.startScan;
 
-    if (status.granted) {
-      this.isScanning = true;
+      // Solicitar permiso para usar la cámara
+      const status = await BarcodeScanner.checkPermission({ force: true });
 
-      BarcodeScanner.hideBackground(); // Oculta la pantalla de fondo para mejorar la visibilidad
+      if (status.granted) {
+        this.isScanning = true;
 
-      const result = await BarcodeScanner.startScan(); // Inicia el escáner
-      this.isScanning = false;
+        // Mostrar nota si estamos en un entorno web
+        if (isWeb) {
+          alert('Nota: La cámara se habilitará en el navegador.');
+        }
 
-      if (result.hasContent) {
-        this.scanResult = result.content; // Almacena el resultado del código QR
+        BarcodeScanner.hideBackground(); // Oculta el fondo para mejorar visibilidad
+
+        const result = await BarcodeScanner.startScan(); // Inicia el escaneo
+        this.isScanning = false;
+
+        if (result.hasContent) {
+          this.scanResult = result.content; // Almacena el resultado del código QR
+        } else {
+          alert('No se encontró contenido en el código QR.');
+        }
+      } else {
+        alert('Permiso denegado para usar la cámara.');
       }
-    } else {
-      alert('Permiso denegado para usar la cámara');
+    } catch (error) {
+      console.error('Error al escanear el código QR:', error);
+      this.stopScan();
     }
   }
 

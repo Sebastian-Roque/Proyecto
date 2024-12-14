@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Observable } from 'rxjs';
-import { map, take, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -10,13 +10,15 @@ import { map, take, tap } from 'rxjs/operators';
 export class AuthGuard implements CanActivate {
   constructor(private afAuth: AngularFireAuth, private router: Router) {}
 
+  // Método para proteger las rutas que requieren autenticación
   canActivate(): Observable<boolean> {
     return this.afAuth.authState.pipe(
-      take(1),
-      map((user) => !!user),
-      tap((isLoggedIn) => {
-        if (!isLoggedIn) {
-          this.router.navigate(['/login']); // Redirige al login si no está autenticado
+      map((user) => {
+        if (user) {
+          return true; // Si el usuario está autenticado, permite el acceso
+        } else {
+          this.router.navigate(['/login']); // Si no está autenticado, redirige al login
+          return false;
         }
       })
     );

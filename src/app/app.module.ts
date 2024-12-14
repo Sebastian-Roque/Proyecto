@@ -14,9 +14,9 @@ import { environment } from '../environments/environment';
     BrowserModule,
     IonicModule.forRoot(),
     AppRoutingModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig), // Inicializar Firebase
-    AngularFirestoreModule, // Proveedor de Firestore
-    HttpClientModule,
+    AngularFireModule.initializeApp(environment.firebaseConfig), // Firebase
+    AngularFirestoreModule, // Firestore
+    HttpClientModule, // HTTP para APIs REST si es necesario
   ],
   bootstrap: [AppComponent],
 })
