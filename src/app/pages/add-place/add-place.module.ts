@@ -7,14 +7,16 @@ import { IonicModule } from '@ionic/angular';
 import { AddPlacePageRoutingModule } from './add-place-routing.module';
 
 import { AddPlacePage } from './add-place.page';
+import { EvaluationService } from '../../services/evaluation.service'; // Importar el servicio
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    AddPlacePageRoutingModule
+    AddPlacePageRoutingModule,
   ],
-  declarations: [AddPlacePage]
+  declarations: [AddPlacePage],
+  providers: [EvaluationService], // Registrar EvaluationService
 })
 export class AddPlacePageModule {}

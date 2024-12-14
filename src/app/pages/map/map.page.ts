@@ -8,36 +8,42 @@ import * as L from 'leaflet';
   styleUrls: ['./map.page.scss'],
 })
 export class MapPage implements OnInit {
-  searchQuery: string = ''; // Campo para buscar una ubicación
-  map: L.Map | null = null;
-  userMarker: L.Marker | null = null;
-  suggestions: any[] = []; // Sugerencias de direcciones
-  isSearchVisible: boolean = true; // Controla la visibilidad del buscador
+  searchQuery: string = ''; // Campo de búsqueda para encontrar ubicaciones
+  map: L.Map | null = null; // Referencia al objeto del mapa
+  userMarker: L.Marker | null = null; // Marcador del usuario en el mapa
+  suggestions: any[] = []; // Lista de sugerencias de búsqueda
+  isSearchVisible: boolean = true; // Controla la visibilidad del cuadro de búsqueda
+  isLoading: boolean = true; // Indica si el mapa está cargando
 
   constructor(private router: Router) {}
 
+  // Método que se ejecuta cuando se inicializa el componente
   ngOnInit() {
-    this.initializeMap();
+    setTimeout(() => {
+      this.initializeMap(); // Inicializa el mapa con un retraso para mejorar la carga inicial
+    }, 500);
   }
 
-  // Inicializa el mapa
+  // Inicializa el mapa de Leaflet y configura el evento de clic
   initializeMap() {
-    this.map = L.map('map').setView([51.505, -0.09], 13); // Coordenadas iniciales
+    this.map = L.map('map').setView([51.505, -0.09], 13); // Configura el mapa con una vista inicial
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-    }).addTo(this.map);
+    }).addTo(this.map); // Agrega la capa de tiles de OpenStreetMap al mapa
 
-    // Manejo de clic en el mapa para geocodificación inversa
+    // Configura un evento para manejar clics en el mapa
     this.map.on('click', (e: L.LeafletMouseEvent) => {
-      this.handleMapClick(e.latlng.lat, e.latlng.lng);
-      this.suggestions = []; // Ocultar sugerencias al hacer clic en el mapa
+      this.handleMapClick(e.latlng.lat, e.latlng.lng); // Maneja la geocodificación inversa
+      this.suggestions = []; // Limpia las sugerencias al hacer clic en el mapa
     });
+
+    this.isLoading = false; // Desactiva el indicador de carga cuando el mapa está listo
   }
 
-  // Maneja cambios en el campo de búsqueda
+  // Maneja los cambios en el campo de búsqueda y busca sugerencias
   async searchChange() {
     if (!this.searchQuery.trim()) {
-      this.suggestions = [];
+      this.suggestions = []; // Si el campo está vacío, limpia las sugerencias
       return;
     }
 
@@ -49,72 +55,69 @@ export class MapPage implements OnInit {
         },
       });
       const data = await response.json();
-      this.suggestions = data.length > 0 ? data : [];
+      this.suggestions = data.length > 0 ? data : []; // Actualiza las sugerencias si hay resultados
     } catch (error) {
       console.error('Error al obtener sugerencias:', error);
-      this.suggestions = [];
+      this.suggestions = []; // Limpia las sugerencias si ocurre un error
     }
   }
 
-  // Selecciona una dirección de las sugerencias
+  // Selecciona una sugerencia de la lista y centra el mapa en esa ubicación
   selectSuggestion(suggestion: any) {
-    const lat = parseFloat(suggestion.lat);
-    const lon = parseFloat(suggestion.lon);
+    const lat = parseFloat(suggestion.lat); // Obtiene la latitud de la sugerencia
+    const lon = parseFloat(suggestion.lon); // Obtiene la longitud de la sugerencia
 
     if (!this.map) {
       console.error('El mapa no está inicializado.');
       return;
     }
 
-    // Centra el mapa en la ubicación seleccionada y agrega marcador
-    this.map.setView([lat, lon], 15);
-    this.addMarker(lat, lon);
-
-    // Limpia las sugerencias pero mantiene el texto en el campo de búsqueda
-    this.suggestions = [];
+    this.map.setView([lat, lon], 15); // Centra el mapa en la ubicación seleccionada
+    this.addMarker(lat, lon); // Agrega un marcador en la ubicación seleccionada
+    this.suggestions = []; // Limpia las sugerencias después de seleccionar
   }
 
-  // Agrega un marcador al mapa
+  // Agrega un marcador al mapa y configura eventos para el marcador
   addMarker(lat: number, lng: number) {
     if (!this.map) {
       console.error('El mapa no está inicializado.');
       return;
     }
 
-    // Elimina el marcador anterior si existe
+    // Elimina el marcador anterior si ya existe
     if (this.userMarker) {
       this.map.removeLayer(this.userMarker);
     }
 
-    // Crea un nuevo marcador
+    // Crea un nuevo marcador en la ubicación proporcionada
     this.userMarker = L.marker([lat, lng], { draggable: true }).addTo(this.map);
     this.userMarker.bindPopup(`<b>Latitud:</b> ${lat}, <b>Longitud:</b> ${lng}`).openPopup();
 
-    // Al hacer clic en el marcador, da la opción de evaluar
+    // Evento al hacer clic en el marcador para agregar una evaluación
     this.userMarker.on('click', () => {
       this.promptEvaluation(lat, lng);
     });
 
-    // Manejo del arrastre del marcador
+    // Evento para manejar el arrastre del marcador
     this.userMarker.on('dragend', () => {
-      const position = this.userMarker?.getLatLng();
+      const position = this.userMarker?.getLatLng(); // Obtiene la nueva posición del marcador
       if (position) {
         this.userMarker?.setPopupContent(`<b>Latitud:</b> ${position.lat}, <b>Longitud:</b> ${position.lng}`).openPopup();
       }
     });
   }
 
-  // Muestra una confirmación para evaluar
+  // Muestra un diálogo para confirmar si se desea agregar una evaluación
   promptEvaluation(lat: number, lng: number) {
-    const confirmEvaluation = confirm('¿Deseas agregar una evaluación en esta ubicación?');
+    const confirmEvaluation = confirm('¿Deseas agregar una evaluación en esta ubicación?'); // Confirmación del usuario
     if (confirmEvaluation) {
       this.router.navigate(['/add-place'], {
-        queryParams: { lat, lng },
+        queryParams: { lat, lng }, // Redirige a la página de agregar lugar con las coordenadas como parámetros
       });
     }
   }
 
-  // Maneja el clic en el mapa para geocodificación inversa
+  // Maneja el clic en el mapa para obtener la dirección con geocodificación inversa
   async handleMapClick(lat: number, lng: number) {
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
     try {
@@ -124,12 +127,11 @@ export class MapPage implements OnInit {
         },
       });
       const data = await response.json();
-      const address = data.display_name || 'Ubicación desconocida';
+      const address = data.display_name || 'Ubicación desconocida'; // Obtiene la dirección o un mensaje predeterminado
 
-      // Agrega un marcador en la ubicación clicada
-      this.addMarker(lat, lng);
+      this.addMarker(lat, lng); // Agrega un marcador en la ubicación clicada
 
-      // Muestra un popup con la dirección
+      // Muestra un popup con la dirección obtenida
       L.popup()
         .setLatLng([lat, lng])
         .setContent(`<b>${address}</b><br>Latitud: ${lat}, Longitud: ${lng}`)
@@ -139,8 +141,8 @@ export class MapPage implements OnInit {
     }
   }
 
-  // Alterna la visibilidad del buscador
+  // Alterna la visibilidad del cuadro de búsqueda
   toggleSearch() {
-    this.isSearchVisible = !this.isSearchVisible;
+    this.isSearchVisible = !this.isSearchVisible; // Cambia el estado de visibilidad
   }
 }

@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, forwardRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EvaluationService } from '../../services/evaluation.service'; // Servicio para guardar evaluaciones
+import { EvaluationService } from '../../services/evaluation.service';
 
 @Component({
   selector: 'app-add-place',
@@ -12,23 +12,21 @@ export class AddPlacePage implements OnInit {
   latitude: number = 0;
   longitude: number = 0;
   comment: string = '';
-  photo: string | null = null; // Para almacenar la URL de la foto cargada
+  photo: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private evaluationService: EvaluationService // Servicio para manejar evaluaciones
+    @Inject(forwardRef(() => EvaluationService)) private evaluationService: EvaluationService
   ) {}
 
   ngOnInit() {
-    // Obtén los parámetros de la URL
     this.route.queryParams.subscribe((params) => {
       this.latitude = params['lat'] || 0;
       this.longitude = params['lng'] || 0;
     });
   }
 
-  // Lógica para subir una foto
   uploadPhoto() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -39,7 +37,7 @@ export class AddPlacePage implements OnInit {
       if (file) {
         const reader = new FileReader();
         reader.onload = (e: any) => {
-          this.photo = e.target.result; // Guarda la foto como base64
+          this.photo = e.target.result;
         };
         reader.readAsDataURL(file);
       }
@@ -48,9 +46,8 @@ export class AddPlacePage implements OnInit {
     input.click();
   }
 
-  // Lógica para guardar el lugar
   async savePlace() {
-    if (!this.placeName || !this.comment) {
+    if (!this.placeName.trim() || !this.comment.trim()) {
       alert('Por favor, completa todos los campos antes de guardar.');
       return;
     }
@@ -66,7 +63,7 @@ export class AddPlacePage implements OnInit {
     try {
       await this.evaluationService.addEvaluation(placeData);
       alert('Lugar guardado exitosamente.');
-      this.router.navigate(['/evaluations']); // Redirige a la página de evaluaciones
+      this.router.navigate(['/evaluations']);
     } catch (error) {
       console.error('Error al guardar el lugar:', error);
       alert('Ocurrió un error al guardar el lugar.');

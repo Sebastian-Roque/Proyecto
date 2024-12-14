@@ -28,8 +28,8 @@ export class AppComponent {
     try {
       const user = await this.afAuth.signInAnonymously();
       console.log('Firebase connected, user:', user);
-    } catch (error) {
-      console.error('Firebase connection error:', error);
+    } catch (error: any) { // Asegura que el tipo sea genérico
+      console.error('Firebase connection error:', error.message || error); // Muestra el mensaje del error o el objeto completo
     }
   }
 }
